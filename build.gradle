@@ -1,0 +1,108 @@
+plugins {
+    id "java-library"
+    id "maven-publish"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+}
+
+group = rootProject.maven_group
+version = rootProject.release_version
+base.archivesName = project.archives_base_name
+
+repositories {
+    maven {
+        url = "https://jitpack.io/"
+    }
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor(compileOnly("org.projectlombok:lombok:1.18.34"))
+    compileOnly "org.jetbrains:annotations:24.1.0"
+    implementation "commons-io:commons-io:2.16.1"
+    implementation "net.sf.jopt-simple:jopt-simple:5.0.4"
+    implementation "com.moandjiezana.toml:toml4j:0.7.2"
+//    implementation "com.fasterxml.jackson.core:jackson-databind:2.16.0"
+//    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.0"
+//    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.16.0"
+
+    implementation("com.github.TCBuildMC:SimpleTools:1.0.1") {
+        transitive false
+    }
+    implementation("com.github.TCBuildMC:SimpleConfigApi:1.3.0") {
+        transitive false
+    }
+
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testAnnotationProcessor(testCompileOnly("org.projectlombok:lombok:1.18.34"))
+}
+
+test {
+    useJUnitPlatform()
+
+    ignoreFailures true
+
+    testLogging {
+        exceptionFormat = "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.withType(JavaCompile).configureEach { tsk ->
+    tsk.options.encoding = "UTF-8"
+}
+
+tasks.withType(Test).configureEach { tsk ->
+    tsk.systemProperty "file.encoding", "UTF-8"
+}
+
+jar {
+    archiveClassifier.set "dev"
+    
+    manifest {
+        attributes "Implementation-Version": project.version
+    }
+}
+
+compileJava.dependsOn clean
+
+shadowJar {
+    archiveClassifier.set null
+
+    def reloc = { String from, String to ->
+        relocate from, to
+    }
+
+//    reloc "com.fasterxml.jackson", "xyz.tcbuildmc.minecraft.server.clsl.lib.jackson"
+    reloc "com.google.gson",       "xyz.tcbuildmc.minecraft.server.clsl.lib.gson"
+    reloc "com.google.errorprone", "xyz.tcbuildmc.minecraft.server.clsl.lib.errorprone"
+    reloc "com.moandjiezana.toml", "xyz.tcbuildmc.minecraft.server.clsl.lib.toml4j"
+    reloc "org.apache.commons.io", "xyz.tcbuildmc.minecraft.server.clsl.lib.commonsio"
+//    reloc "org.yaml.snakeyaml",    "xyz.tcbuildmc.minecraft.server.clsl.lib.snakeyaml"
+    reloc "joptsimple",            "xyz.tcbuildmc.minecraft.server.clsl.lib.joptsimple"
+
+    exclude "schema/**"
+}
+
+assemble.dependsOn shadowJar
+
+publishing {
+    publications {
+        create("MavenJava", MavenPublication) {
+            from components.java
+            artifactId = project.archives_base_name
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
+}
