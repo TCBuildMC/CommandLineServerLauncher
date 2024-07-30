@@ -28,7 +28,7 @@ dependencies {
     implementation("com.github.TCBuildMC:SimpleTools:1.0.1") {
         transitive false
     }
-    implementation("com.github.TCBuildMC:SimpleConfigApi:1.3.0") {
+    implementation("com.github.TCBuildMC:SimpleConfigApi:1.3.1") {
         transitive false
     }
 
