@@ -1,0 +1,9 @@
+{
+  "init.language": "Language: English",
+  "shutdown": "CLSL is shutting down.",
+  "err.env.jvm_version": "CLSL requires Java {}. Please use it.",
+  "err.env.jvm_memory": "The memory allocated for CLSL is not enough. You should allocate more than {} MB. (Add one of these jvm arg: -Xmx???M or -Xmx???G)",
+  "err.config.modify.config_version": "config_version is UNEDITABLE! The basic config_version is {}.",
+  "command.fail": "Failed to execute the command.",
+  "command.not_found": "Cannot found the command."
+}
