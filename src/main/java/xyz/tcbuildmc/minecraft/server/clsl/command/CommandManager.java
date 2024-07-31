@@ -1,19 +1,18 @@
 package xyz.tcbuildmc.minecraft.server.clsl.command;
 
-import lombok.Getter;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 import xyz.tcbuildmc.common.i18n.Translations;
-import xyz.tcbuildmc.minecraft.server.clsl.main.MainBootstrap;
+import xyz.tcbuildmc.minecraft.server.clsl.CLSLMain;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-public class CommandManager {
+public final class CommandManager {
     private final List<Command> commands;
 
     @Contract(pure = true)
-    public CommandManager(List<Command> commands) {
+    private CommandManager(List<Command> commands) {
         this.commands = commands;
     }
 
@@ -21,37 +20,27 @@ public class CommandManager {
         this(new ArrayList<>());
     }
 
-    public void registerCommand(Command command) {
-        this.commands.add(command);
+    public void register(Command c) {
+        this.commands.add(c);
     }
 
-    public void unregisterCommand(Command command) {
-        this.commands.remove(command);
+    public void unregister(Command c) {
+        this.commands.removeIf(o -> o.equals(c));
     }
 
-    public void call(String name) {
-        for (Command command : this.commands) {
-            if (command.getName().equals(name)) {
-                CommandResult result = command.execute();
+    public void runCommand(String name, @Nullable String... args) {
+        for (Command c : this.commands) {
+            if (c.getMergedOptions().contains(name)) {
+                CommandResult result = c.execute(args);
 
                 if (result.isFailed()) {
-                    command.handleFailResult();
+                    c.handleFailedResult();
                 }
+
                 return;
-            }
-
-            for (String alias : command.getAliases()) {
-                if (alias.equals(name)) {
-                    CommandResult result = command.execute();
-
-                    if (result.isFailed()) {
-                        command.handleFailResult();
-                    }
-                    return;
-                }
             }
         }
 
-        MainBootstrap.LOGGER.error(Translations.getTranslation("command.not_found"));
+        CLSLMain.log.error(Translations.getTranslation("command.not_found"));
     }
 }

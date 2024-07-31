@@ -1,43 +1,35 @@
 package xyz.tcbuildmc.minecraft.server.clsl.command;
 
-import lombok.Getter;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import xyz.tcbuildmc.common.i18n.Translations;
-import xyz.tcbuildmc.minecraft.server.clsl.main.MainBootstrap;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-@Getter
 public abstract class Command {
     private final String name;
-
     private final List<String> aliases;
 
-    private final Logger commandLogger;
-
-    public Command(String name) {
-        this(name, new ArrayList<>());
-    }
-
-    public Command(String name, List<String> aliases) {
-        this(name, aliases, LoggerFactory.getLogger(name.toLowerCase(Locale.ROOT)));
-    }
-
     @Contract(pure = true)
-    private Command(@NotNull String name, List<String> aliases, Logger commandLogger) {
-        this.name = name.toLowerCase(Locale.ROOT);
+    public Command(String name, List<String> aliases) {
+        this.name = name;
         this.aliases = aliases;
-        this.commandLogger = commandLogger;
     }
 
-    public abstract CommandResult execute();
+    public abstract CommandResult execute(@Nullable String... args);
 
-    public void handleFailResult() {
-        MainBootstrap.LOGGER.error(Translations.getTranslation("command.fail"));
+    public abstract void handleFailedResult();
+
+    public boolean hasAliases() {
+        return this.aliases != null && !this.aliases.isEmpty();
+    }
+
+    public List<String> getMergedOptions() {
+        List<String> list = new ArrayList<>();
+        list.add(this.name);
+        if (this.hasAliases()) {
+            list.addAll(this.aliases);
+        }
+        return list;
     }
 }
